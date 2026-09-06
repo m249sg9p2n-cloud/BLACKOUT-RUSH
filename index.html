@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- BLACKOUT RUSH v1.2 SECRET TEST : cumulative build -->
+<!-- BLACKOUT RUSH v1.3 IOS SOUND FIX : cumulative build -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
@@ -158,7 +158,7 @@ body{display:flex;justify-content:center;overflow-x:hidden}
 <body>
 <div id="app">
   <div class="top">
-    <div class="logo">BLACKOUT RUSH<small>COPA GAMES ORIGINAL SLOT / v1.2 SECRET TEST</small></div>
+    <div class="logo">BLACKOUT RUSH<small>COPA GAMES ORIGINAL SLOT / v1.3 IOS SOUND FIX</small></div>
     <button class="gear" id="gear">⚙</button>
   </div>
 
@@ -510,6 +510,66 @@ function startAT(upper=false){
   sfxHit();update();
 }
 
+
+/* iOS-safe freeze sound system */
+let freezeAudioBuffer=null;
+let audioUnlocked=false;
+
+async function prepareFreezeAudio(){
+  try{
+    audioCtx ||= new (window.AudioContext||window.webkitAudioContext)();
+    const el=$('#freezeSfx');
+    if(!el || freezeAudioBuffer) return;
+    const res=await fetch(el.src);
+    const arr=await res.arrayBuffer();
+    freezeAudioBuffer=await audioCtx.decodeAudioData(arr.slice(0));
+  }catch(e){}
+}
+
+async function unlockGameAudio(){
+  try{
+    audioCtx ||= new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended') await audioCtx.resume();
+    audioUnlocked=audioCtx.state==='running';
+    prepareFreezeAudio();
+  }catch(e){}
+}
+
+function playFreezeSfx(){
+  try{
+    if(audioCtx && audioCtx.state==='running' && freezeAudioBuffer){
+      const src=audioCtx.createBufferSource();
+      const gain=audioCtx.createGain();
+      gain.gain.value=1.0;
+      src.buffer=freezeAudioBuffer;
+      src.connect(gain);
+      gain.connect(audioCtx.destination);
+      src.start(0);
+      return true;
+    }
+  }catch(e){}
+
+  // HTMLAudio fallback
+  try{
+    const sfx=$('#freezeSfx');
+    if(sfx){
+      sfx.pause();
+      sfx.currentTime=0;
+      sfx.volume=1.0;
+      const p=sfx.play();
+      if(p && typeof p.catch==='function') p.catch(()=>{});
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+
+// One real user gesture unlocks audio for later AUTO / freeze events on iPhone.
+['pointerdown','touchstart','click'].forEach(ev=>{
+  document.addEventListener(ev,unlockGameAudio,{once:true,passive:true});
+});
+setTimeout(prepareFreezeAudio,150);
+
 function playFreezeMovie(afterText='7 7 7', cb){
   S.fxBusy=true;
   clearTimeout(S.autoTimer);
@@ -525,16 +585,10 @@ function playFreezeMovie(afterText='7 7 7', cb){
   ov.classList.add('show');
 
   try{
-    if(sfx){
-      sfx.pause();
-      sfx.currentTime=0;
-      sfx.volume=1.0;
-      const ap=sfx.play();
-      if(ap && typeof ap.catch==='function') ap.catch(()=>{});
-    }
+    playFreezeSfx();
     v.pause();
     v.currentTime=0;
-    v.muted=false;
+    v.muted=true;
     const p=v.play();
     if(p && typeof p.catch==='function'){
       p.catch(()=>{
