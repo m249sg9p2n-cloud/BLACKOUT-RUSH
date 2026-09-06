@@ -227,6 +227,62 @@ body.play-mode #exitRunBtn{display:inline-flex;align-items:center;justify-conten
   #difficultyInfo,#playMessage{font-size:9px}
 }
 
+
+/* === 2026-09-07 fix pack: no-scroll / stronger visual / hidden candidates in preview / sound-ready === */
+html,body{overflow:hidden;overscroll-behavior:none}
+#app{overflow:hidden}
+.view{overflow:auto}
+body.play-mode #app{height:100dvh;max-height:100dvh;overflow:hidden;padding:calc(env(safe-area-inset-top) + 6px) 8px calc(env(safe-area-inset-bottom) + 8px)}
+body.play-mode #playView{display:flex!important;flex-direction:column;height:100%;overflow:hidden;padding:0}
+body.play-mode #playHero{flex:0 0 auto;padding:8px 10px 9px;border-radius:18px;background:
+ linear-gradient(180deg,#121d45f2,#0b1228f5),
+ radial-gradient(circle at 15% 15%,#ffd56b22,transparent 30%),
+ radial-gradient(circle at 85% 5%,#6af6ff22,transparent 28%)}
+.playCatch{font-size:10px;top:8px;left:10px}.playMascot{font-size:24px;top:7px;right:10px}
+.playLogo{font-size:23px}.playLogoSub{font-size:16px}.playTag{font-size:9px;margin-top:3px}
+.playTopStats{gap:5px;margin-top:8px}.playStat{padding:7px 7px;border-radius:12px}.playStat .k{font-size:8px}.playStat .v{font-size:13px}
+#runCard{flex:0 0 auto;padding:8px 10px;border-radius:18px;margin-top:6px;margin-bottom:6px}
+.runHead{grid-template-columns:1fr 1fr 1.05fr;gap:6px}.runUnit{padding-right:6px}.bigStage{font-size:22px}.lifeRow{font-size:19px;gap:3px}.rewardGlow{font-size:18px}
+.playMetaRow{margin-top:5px;gap:6px}.progressLabel,.progressNote{font-size:9px}.progressLine{height:7px}.note#difficultyInfo{font-size:9px;line-height:1.35;margin-top:5px!important}
+.boardWrap{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;position:relative;padding:8px;border-radius:18px;margin-bottom:0;overflow:hidden;background:
+ linear-gradient(180deg,#0d1633f0,#070e1df2),
+ radial-gradient(circle at 50% 10%,#27458d20,transparent 45%)}
+.boardHeader{display:grid;grid-template-columns:42px 1fr 42px;align-items:center;gap:4px;margin-bottom:4px}.bannerSide{font-size:8px}.boardTitle{font-size:12px}
+#memoryGrid{width:min(56vw,228px);margin:0 auto;gap:6px;flex:0 0 auto}
+.cell{font-size:26px;border-radius:14px}
+.candidateWrap{margin-top:6px;padding:7px 8px;border-radius:16px}.candidateTitle{margin-bottom:4px}.candidateTitle .k{font-size:12px}.candidateTitle .mutedLine{font-size:8px}
+#candidateBox{grid-template-columns:repeat(6,1fr);gap:6px}.candidate{font-size:23px;border-radius:11px}
+.playSupportWrap{margin-top:6px;padding:6px 8px;border-radius:16px}.playSupportTitle{font-size:11px;margin-bottom:4px}
+#supportBadgesPlay{gap:5px}.supportChipCard{min-height:44px;padding:5px 3px;border-radius:12px}.supportChipEmoji{font-size:16px}.supportChipName{font-size:8px}.supportChipMeta{font-size:7px}
+.answerRow{grid-template-columns:1.25fr .8fr .8fr;gap:6px;margin-top:6px}.answerRow .btn,.answerRow .ghostBtn{padding:10px 7px;font-size:11px}#answerBtn{font-size:16px}
+#playMessage{font-size:9px;line-height:1.35;margin-top:5px!important;min-height:14px}
+#exitRunBtn{font-size:9px;padding:7px 9px;top:8px;right:8px}
+#previewCover{display:none;position:absolute;left:8px;right:8px;top:118px;bottom:118px;border-radius:22px;align-items:center;justify-content:center;flex-direction:column;pointer-events:none;background:linear-gradient(180deg,#07101dcc,#091a35cc);backdrop-filter:blur(3px);border:1px solid #67d5ff33;box-shadow:inset 0 0 0 1px #ffffff10,0 0 22px #6af6ff18;z-index:3}
+#previewCover.show{display:flex}.previewMain{font-size:30px;font-weight:1000;letter-spacing:.08em;background:linear-gradient(180deg,#fff6b8,#ffd56b 55%,#ffa04d);-webkit-background-clip:text;color:transparent;text-shadow:0 0 18px #ffd56b35}.previewSub{font-size:12px;color:#dce7ff;font-weight:900;letter-spacing:.08em;margin-top:6px}.previewTimer{font-size:14px;color:#6af6ff;font-weight:1000;margin-top:8px}
+.candidateWrap.hiddenPhase,.playSupportWrap.hiddenPhase,.answerRow.hiddenPhase{display:none!important}
+#playHero.flashy::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent,#ffffff10,transparent);transform:translateX(-100%);animation:heroSweep 3.4s linear infinite}
+@keyframes heroSweep{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+@media (max-height:830px){
+  .playMascot,.playCatch{display:none}
+  #playHero{padding:7px 9px 8px}.playLogo{font-size:21px}.playLogoSub{font-size:15px}.playTopStats{margin-top:6px}.playStat .v{font-size:12px}
+  #runCard{padding:7px 9px;margin-top:5px;margin-bottom:5px}.bigStage{font-size:20px}.lifeRow{font-size:17px}.rewardGlow{font-size:16px}
+  #memoryGrid{width:min(52vw,208px);gap:5px}.cell{font-size:23px;border-radius:13px}
+  #candidateBox{gap:5px}.candidate{font-size:21px;border-radius:10px}
+  .playSupportWrap{padding:5px 7px}.supportChipCard{min-height:40px}
+  .answerRow .btn,.answerRow .ghostBtn{padding:9px 6px;font-size:10px}#answerBtn{font-size:14px}
+  #previewCover{top:104px;bottom:104px}
+}
+@media (max-height:760px){
+  #playHero{padding:6px 8px}.playLogo{font-size:19px}.playLogoSub{font-size:13px}.playTag{display:none}.playTopStats{margin-top:4px}.playStat{padding:6px}.playStat .v{font-size:11px}
+  #runCard{padding:6px 8px}.progressLine{height:6px}.note#difficultyInfo{font-size:8px}
+  .boardHeader{display:none}.boardWrap{padding:7px}
+  #memoryGrid{width:min(48vw,188px)}.cell{font-size:21px;border-radius:12px}
+  #candidateBox{gap:4px}.candidate{font-size:18px}
+  .playSupportTitle{font-size:10px}.supportChipCard{min-height:36px}.supportChipEmoji{font-size:14px}.supportChipName{font-size:7px}
+  .answerRow{gap:5px}.answerRow .btn,.answerRow .ghostBtn{padding:8px 5px;font-size:9px}#answerBtn{font-size:13px}
+  #playMessage{font-size:8px}.previewMain{font-size:24px}.previewSub{font-size:10px}
+}
+
 </style>
 </head>
 <body>
@@ -293,7 +349,7 @@ body.play-mode #exitRunBtn{display:inline-flex;align-items:center;justify-conten
   </section>
 
   <section class="view" id="playView">
-    <div class="panel" id="playHero">
+    <div class="panel flashy" id="playHero">
       <div class="playCatch">記憶は最強のガチャだ</div>
       <div class="playMascot">👻💎</div>
       <div class="playLogo">EMOJI</div>
@@ -330,25 +386,26 @@ body.play-mode #exitRunBtn{display:inline-flex;align-items:center;justify-conten
       <div class="note" id="difficultyInfo" style="margin-top:8px"></div>
     </div>
 
-    <div class="panel boardWrap">
+    <div class="panel boardWrap" id="boardWrap">
       <div class="boardHeader">
         <div class="bannerSide">記憶は<br>最強の<br>ガチャだ</div>
         <div class="boardTitle">MEMORY BOARD</div>
         <div class="bannerSide">集めて<br>遊んで<br>もっと好きに<br>なる</div>
       </div>
       <div id="memoryGrid"></div>
-      <div class="candidateWrap">
+      <div id="previewCover"><div class="previewMain">MEMORIZE</div><div class="previewSub">配置を覚えてください</div><div class="previewTimer" id="previewTimer"></div></div>
+      <div class="candidateWrap" id="candidateWrap">
         <div class="candidateTitle">
           <div class="k">候補BOX</div>
           <div class="mutedLine">絵文字をドラッグして、空きマスに配置しよう！</div>
         </div>
         <div id="candidateBox"></div>
       </div>
-      <div class="playSupportWrap">
+      <div class="playSupportWrap" id="playSupportWrap">
         <div class="playSupportTitle">サポートアイテム</div>
         <div id="supportBadgesPlay"></div>
       </div>
-      <div class="answerRow">
+      <div class="answerRow" id="answerRow">
         <button class="btn" id="answerBtn" disabled>ANSWER</button>
         <button class="ghostBtn" id="recallBtn" disabled>RECALL</button>
         <button class="ghostBtn" id="newRunBtn">HOME</button>
@@ -451,6 +508,54 @@ let selectedSupportFilter = 'owned';
 let selectedCollectionFilter = 'ALL';
 let dragState = { active:false, emoji:null, source:null };
 
+
+let audioCtx = null;
+function ensureAudio(){
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if(!Ctx) return null;
+  if(!audioCtx) audioCtx = new Ctx();
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function tone(freq, dur=0.08, type='sine', vol=0.03, delay=0){
+  const ctx = ensureAudio(); if(!ctx) return;
+  const now = ctx.currentTime + delay;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type; osc.frequency.setValueAtTime(freq, now);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(vol, now + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(now); osc.stop(now + dur + 0.02);
+}
+function noiseBurst(dur=0.12, vol=0.03, hp=700){
+  const ctx = ensureAudio(); if(!ctx) return;
+  const length = Math.floor(ctx.sampleRate * dur);
+  const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for(let i=0;i<length;i++) data[i] = (Math.random()*2-1) * (1 - i/length);
+  const src = ctx.createBufferSource(); src.buffer = buffer;
+  const filter = ctx.createBiquadFilter(); filter.type='highpass'; filter.frequency.value = hp;
+  const gain = ctx.createGain(); gain.gain.value = vol;
+  src.connect(filter); filter.connect(gain); gain.connect(ctx.destination); src.start();
+}
+function sfx(name){
+  switch(name){
+    case 'start': tone(440,0.06,'triangle',0.03); tone(660,0.08,'triangle',0.028,0.05); tone(880,0.11,'triangle',0.025,0.12); break;
+    case 'hide': tone(700,0.04,'square',0.02); tone(520,0.06,'square',0.018,0.05); break;
+    case 'pick': tone(820,0.03,'triangle',0.015); break;
+    case 'place': tone(560,0.05,'triangle',0.018); tone(690,0.06,'triangle',0.014,0.03); break;
+    case 'wrong': tone(260,0.09,'sawtooth',0.04); tone(180,0.16,'sawtooth',0.03,0.05); break;
+    case 'guard': tone(540,0.05,'sine',0.025); tone(740,0.08,'sine',0.02,0.04); break;
+    case 'clear': tone(660,0.06,'triangle',0.026); tone(880,0.08,'triangle',0.024,0.07); tone(1180,0.12,'triangle',0.022,0.15); break;
+    case 'recall': tone(420,0.08,'sine',0.02); tone(630,0.1,'sine',0.018,0.08); break;
+    case 'push': tone(320,0.06,'square',0.03); tone(520,0.08,'square',0.025,0.05); break;
+    case 'puchun': tone(150,0.16,'sawtooth',0.05); tone(95,0.28,'sawtooth',0.045,0.05); noiseBurst(0.18,0.03,600); break;
+    case 'get': tone(760,0.05,'triangle',0.02); tone(980,0.08,'triangle',0.018,0.05); break;
+  }
+}
+document.addEventListener('pointerdown', ()=>ensureAudio(), {once:true});
 function defaultState(){
   return {
     coins: 500,
@@ -619,6 +724,7 @@ function renderCollection(){
 }
 
 function beginRun(){
+  sfx('start');
   const effects = calcSupportEffects();
   run = {
     stage:1,
@@ -654,6 +760,7 @@ function prepareStage(){
   run.fixed = new Set();
   run.placements = {};
   run.phase='preview';
+  if(V('#previewTimer')) V('#previewTimer').textContent = `${(diff.preview + run.effects.time).toFixed(1)} sec`;
   if(run.effects.autoFix>0){
     sampleUnique(run.hiddenIndices, Math.min(run.effects.autoFix, run.hiddenIndices.length)).forEach(i=>{ run.fixed.add(i); run.placements[i]=run.board[i]; });
   }
@@ -664,12 +771,13 @@ function prepareStage(){
   const dummies = sampleUnique(boardPool.filter(e=>!run.board.includes(e)), dummiesWanted);
   run.candidates = shuffle([...missingEmojis, ...dummies]);
   renderRun();
-  V('#playMessage').textContent = `配置を覚えてください…（${(diff.preview + run.effects.time).toFixed(2)}秒）`;
+  V('#playMessage').textContent = `配置を覚えてください…（${(diff.preview + run.effects.time).toFixed(1)}秒）`;
   clearTimeout(prepareStage._t1); clearTimeout(prepareStage._t2);
   prepareStage._t1 = setTimeout(()=>hideForStage(), (diff.preview + run.effects.time)*1000);
 }
 function hideForStage(){
   if(!run) return;
+  sfx('hide');
   run.phase='answer';
   run.hiddenIndices.forEach(i=>{ if(!run.fixed.has(i) && !run.lingerIndices.includes(i)) run.currentVisible[i] = null; });
   renderRun();
@@ -680,8 +788,18 @@ function hideForStage(){
 }
 function renderRun(){
   if(!run){
-    V('#memoryGrid').innerHTML=''; V('#candidateBox').innerHTML=''; V('#lifeRow').innerHTML='';
-    V('#stageLabel').textContent='STAGE 1'; V('#runCoin').textContent='0'; return;
+    V('#memoryGrid').innerHTML='';
+    V('#candidateBox').innerHTML='';
+    V('#lifeRow').innerHTML='';
+    V('#stageLabel').textContent='STAGE 1';
+    V('#runCoin').textContent='0';
+    if(V('#masterRemain')) V('#masterRemain').textContent='あと 30 STAGE';
+    if(V('#previewCover')) V('#previewCover').classList.remove('show');
+    if(V('#candidateWrap')) V('#candidateWrap').classList.add('hiddenPhase');
+    if(V('#playSupportWrap')) V('#playSupportWrap').classList.add('hiddenPhase');
+    if(V('#answerRow')) V('#answerRow').classList.add('hiddenPhase');
+    V('#playMessage').textContent='HOMEからゲーム開始で挑戦できます。';
+    return;
   }
   const diff = getDifficulty(run.stage);
   V('#stageLabel').textContent = `STAGE ${run.stage}`;
@@ -700,15 +818,28 @@ function renderRun(){
     if(run.fixed.has(idx) && run.hiddenIndices.includes(idx)) cls.push('auto');
     return `<div class="${cls.join(' ')}" data-cell="${idx}">${content || '＋'}</div>`;
   }).join('');
-  V('#candidateBox').innerHTML = run.candidates.map((e,idx)=>`<div class="candidate" data-cand="${idx}">${e}</div>`).join('');
-  VA('[data-cand]').forEach(el=> el.addEventListener('pointerdown', ev=>startDrag(ev, Number(el.dataset.cand))));
+
+  const showAnswerUI = run.phase === 'answer';
+  if(V('#candidateWrap')) V('#candidateWrap').classList.toggle('hiddenPhase', !showAnswerUI);
+  if(V('#playSupportWrap')) V('#playSupportWrap').classList.toggle('hiddenPhase', !showAnswerUI);
+  if(V('#answerRow')) V('#answerRow').classList.toggle('hiddenPhase', !showAnswerUI);
+  if(V('#previewCover')) V('#previewCover').classList.toggle('show', !showAnswerUI);
+  if(V('#previewTimer')) V('#previewTimer').textContent = !showAnswerUI ? `${(diff.preview + run.effects.time).toFixed(1)} sec` : '';
+
+  if(showAnswerUI){
+    V('#candidateBox').innerHTML = run.candidates.map((e,idx)=>`<div class="candidate" data-cand="${idx}">${e}</div>`).join('');
+    VA('[data-cand]').forEach(el=> el.addEventListener('pointerdown', ev=>startDrag(ev, Number(el.dataset.cand))));
+  } else {
+    V('#candidateBox').innerHTML = '';
+  }
+
   V('#answerBtn').disabled = !(run && run.phase==='answer');
   V('#recallBtn').disabled = !(run && run.phase==='answer' && run.recallLeft>0);
   const playItems = getSupportItems();
   V('#supportBadgesPlay').innerHTML = playItems.map(item=> item ? supportBadge(item) : `<div class="supportChipCard"><div class="supportChipEmoji">＋</div><div class="supportChipName">EMPTY SLOT</div><div class="supportChipMeta">NONE</div></div>`).join('');
-}
-function startDrag(ev, idx){
+}function startDrag(ev, idx){
   if(!run || run.phase!=='answer') return;
+  sfx('pick');
   const emoji = run.candidates[idx];
   dragState = { active:true, emoji, source:idx };
   const fl = V('#floating');
@@ -739,6 +870,7 @@ function dragEnd(ev){
 function dropOnCell(idx){
   if(!run || !dragState.emoji || !run.hiddenIndices.includes(idx) || run.fixed.has(idx)) return;
   run.placements[idx]=dragState.emoji;
+  sfx('place');
   renderRun();
 }
 function calcStageReward(stage){
@@ -756,6 +888,7 @@ function answerStage(){
   const wrong=[];
   unresolved.forEach(i=>{ if(run.placements[i]===run.board[i]) run.fixed.add(i); else wrong.push(i); });
   if(wrong.length===0){
+    sfx('clear');
     let reward = calcStageReward(run.stage) + (run.effects.perfectBonus||0);
     if(Math.random()*100 < run.effects.doubleChance) reward *= 2;
     run.coins += reward;
@@ -768,7 +901,7 @@ function answerStage(){
   } else {
     wrong.forEach(i=>delete run.placements[i]);
     let shielded = false;
-    if(run.shieldLeft>0){ run.shieldLeft--; shielded=true; } else { run.lives--; }
+    if(run.shieldLeft>0){ run.shieldLeft--; shielded=true; sfx('guard'); } else { run.lives--; sfx('wrong'); }
     renderRun();
     if(run.skipMistLeft>0){ run.skipMistLeft--; stageRecall(1.2); }
     V('#playMessage').textContent = shielded ? 'ガード発動！ ライフ減少を無効化。' : 'ミス… ライフが1減りました。';
@@ -800,7 +933,7 @@ function stageRecall(sec){
     V('#playMessage').textContent = '消えたマスに絵文字を戻してください。';
   }, sec*1000);
 }
-function useRecall(){ if(!run || run.recallLeft<=0) return; run.recallLeft--; renderRun(); stageRecall(run.effects.recallSec || 1); }
+function useRecall(){ if(!run || run.recallLeft<=0) return; sfx('recall'); run.recallLeft--; renderRun(); stageRecall(run.effects.recallSec || 1); }
 
 function acquireItem(item){
   state.owned[item.id] = (state.owned[item.id]||0)+1;
@@ -824,13 +957,13 @@ function openPushPrompt(label='昇格のチャンス'){
   return new Promise(resolve=>{
     V('#pushHint').textContent = label;
     V('#pushOverlay').classList.add('show');
-    V('#pushBtn').onclick = ()=>{ V('#pushOverlay').classList.remove('show'); resolve(true); };
+    V('#pushBtn').onclick = ()=>{ sfx('push'); V('#pushOverlay').classList.remove('show'); resolve(true); };
   });
 }
 async function playPuchun(upgradeTo){
   const ov=V('#puchunOverlay'); const vid=V('#puchunVideo'); const txt=V('#upgradeText');
   V('#upgradeTierText').textContent = rarityLabel(upgradeTo);
-  ov.classList.add('show'); txt.classList.remove('show');
+  ov.classList.add('show'); txt.classList.remove('show'); sfx('puchun');
   try{ vid.pause(); vid.currentTime=0; const p=vid.play(); if(p && p.catch) await p.catch(()=>null); }catch(e){}
   await new Promise(res=>setTimeout(res, 900));
   txt.classList.add('show');
@@ -879,6 +1012,7 @@ function renderGachaResult(chain, finalItem){
     <div class="badgeRow"><span class="rarity ${rarityColorClass(finalItem.rarity)}">${rarityLabel(finalItem.rarity)}</span>${isNew?'<span class="resultNew">NEW!</span>':''}</div>
     <div class="resultName" style="margin-top:10px">${finalItem.ability.name}</div>
     <div class="note" style="margin-top:8px">${finalItem.ability.desc}<br>所持数 x${ownedCount(finalItem.id)}</div>`;
+  sfx('get');
   createSparks(area, 12);
 }
 function renderTenResult(results){
@@ -904,7 +1038,7 @@ V('#newRunBtn').onclick=()=>{ run=null; clearTimeout(prepareStage._t1); clearTim
 V('#exitRunBtn').onclick=()=>{ run=null; clearTimeout(prepareStage._t1); clearTimeout(prepareStage._t2); renderRun(); setView('home'); };
 V('#recallBtn').onclick=useRecall;
 V('#nextStageBtn').onclick=nextStage;
-V('#clearToGacha').onclick=()=>{ V('#stageClearModal').classList.remove('show'); setView('gacha'); };
+if(V('#clearToGacha')) V('#clearToGacha').onclick=()=>{ V('#stageClearModal').classList.remove('show'); setView('gacha'); };
 V('#gameOverRetry').onclick=()=>{ V('#gameOverModal').classList.remove('show'); beginRun(); };
 V('#gameOverToGacha').onclick=()=>{ V('#gameOverModal').classList.remove('show'); setView('gacha'); };
 V('#singleBtn').onclick=()=>singleSummon(true);
