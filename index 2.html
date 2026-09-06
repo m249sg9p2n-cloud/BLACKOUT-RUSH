@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#050505">
+<title>BLACKOUT RUSH - COPA GAMES</title>
+<style>
+:root{
+  --bg:#050505; --panel:#101014; --line:#2a2a32; --text:#f4f4f6;
+  --muted:#9a9aa3; --hot:#ff2d55; --gold:#ffd166; --cyan:#65e7ff;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:radial-gradient(circle at 50% 20%,#17171d 0,#09090c 35%,#030304 100%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;min-height:100%}
+body{display:flex;justify-content:center;overflow-x:hidden}
+#app{width:min(100vw,460px);min-height:100vh;padding:max(12px,env(safe-area-inset-top)) 12px max(16px,env(safe-area-inset-bottom));position:relative}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.logo{font-weight:900;letter-spacing:.12em;font-size:21px}
+.logo small{display:block;color:#ff5a75;font-size:10px;letter-spacing:.24em;margin-top:2px}
+.gear{border:1px solid #333;background:#111;color:#bbb;border-radius:10px;padding:7px 9px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:10px 0}
+.stat{background:linear-gradient(#15151a,#0d0d11);border:1px solid #27272e;border-radius:11px;padding:8px;text-align:center;box-shadow:inset 0 0 18px #000}
+.stat b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+.stat span{font-size:9px;color:#888;letter-spacing:.12em}
+.machine{border:1px solid #32323b;border-radius:18px;background:linear-gradient(180deg,#111118,#09090c);padding:10px;box-shadow:0 18px 50px #0009, inset 0 0 34px #000}
+.panel-title{text-align:center;font-weight:900;letter-spacing:.17em;font-size:12px;color:#d5d5dd;margin:2px 0 8px}
+.lamp-row{display:flex;justify-content:center;gap:8px;margin-bottom:7px}
+.lamp{height:9px;width:35px;border-radius:99px;background:#271016;box-shadow:inset 0 0 6px #000}
+.lamp.on{background:#ff244f;box-shadow:0 0 8px #ff244f,0 0 18px #ff244f}
+.reel-window{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:5px;background:#020203;border:3px solid #27272e;border-radius:13px;padding:5px;overflow:hidden}
+.reel-window:before,.reel-window:after{content:"";position:absolute;left:0;right:0;height:1px;background:#ffffff2a;z-index:4}
+.reel-window:before{top:33.33%}.reel-window:after{top:66.66%}
+.reel{height:216px;background:linear-gradient(#111,#fafafa 17%,#fff 50%,#fafafa 83%,#111);border-radius:8px;overflow:hidden;position:relative;box-shadow:inset 0 0 12px #0008}
+.cell{height:72px;display:flex;align-items:center;justify-content:center;font-size:37px;font-weight:900;color:#101014;text-shadow:0 1px 0 #fff}
+.cell.seven{color:#e6002d;text-shadow:0 1px 0 #fff,0 0 10px #ff3159}
+.cell.bar{font-size:23px;background:linear-gradient(#111,#333,#111);color:#fff;text-shadow:none;margin:17px 7px;height:38px;border-radius:4px}
+.cell.star{color:#d89e00}
+.reel.spinning .cell{filter:blur(2px)}
+.center-glow{pointer-events:none;position:absolute;left:4px;right:4px;top:77px;height:67px;border:2px solid #ffffff45;border-radius:8px;z-index:5;box-shadow:0 0 20px #fff2}
+.message{height:58px;margin:9px 2px 6px;border:1px solid #292932;border-radius:10px;background:#08080b;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:800;letter-spacing:.05em;font-size:14px;padding:7px;overflow:hidden}
+.message.hot{color:#fff;text-shadow:0 0 8px #ff234c;box-shadow:inset 0 0 22px #ff234c20}
+.controls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:9px}
+.stop{height:56px;border:none;border-radius:14px;font-size:18px;font-weight:900;color:#fff;background:linear-gradient(#4b4b55,#22232a);box-shadow:0 5px 0 #0b0b0e, inset 0 1px 0 #ffffff32}
+.stop:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 #0b0b0e}
+.stop:disabled{opacity:.34}
+.bottom-controls{display:grid;grid-template-columns:1fr 1.5fr;gap:8px;margin-top:11px}
+.bet,.lever{height:58px;border:none;border-radius:14px;font-weight:900}
+.bet{background:#24242b;color:#eee;border:1px solid #3d3d46}
+.lever{background:linear-gradient(180deg,#ff4f69,#bb082b);color:white;font-size:17px;letter-spacing:.08em;box-shadow:0 6px 0 #630014,0 0 24px #ff244f32}
+.lever:active:not(:disabled){transform:translateY(3px);box-shadow:0 3px 0 #630014}
+.lever:disabled{opacity:.45}
+.modebox{margin-top:10px;border:1px solid #292932;border-radius:12px;background:#0c0c10;padding:9px}
+.modehead{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#aaa;margin-bottom:6px}
+.gauge{height:8px;background:#1c1c22;border-radius:99px;overflow:hidden}
+.gauge>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff385c,#ffd166);transition:width .25s}
+.log{margin-top:7px;min-height:34px;font-size:10px;color:#8d8d98;text-align:center;line-height:1.45}
+.footer{text-align:center;color:#555;font-size:9px;letter-spacing:.15em;margin-top:10px}
+#fx{position:fixed;inset:0;z-index:100;pointer-events:none;display:none}
+#fx.show{display:block}
+.black{position:absolute;inset:0;background:#000;opacity:0}
+#fx.puchun .black{animation:blackout 1.75s forwards}
+.line{position:absolute;left:0;right:0;top:50%;height:3px;background:white;box-shadow:0 0 18px white;transform:scaleX(0);opacity:0}
+#fx.puchun .line{animation:linefx 1.2s ease-out forwards}
+.fxtext{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:1000;font-size:31px;letter-spacing:.12em;opacity:0;padding:25px}
+#fx.puchun .fxtext{animation:textfx 1.9s 1.05s forwards}
+@keyframes blackout{0%{opacity:0}18%{opacity:.1}24%{opacity:1}100%{opacity:1}}
+@keyframes linefx{0%,19%{opacity:0;transform:scaleX(.05)}20%{opacity:1;transform:scaleX(.05)}36%{opacity:1;transform:scaleX(1)}48%{opacity:1;transform:scaleX(.15)}55%,100%{opacity:0;transform:scaleX(0)}}
+@keyframes textfx{0%{opacity:0;transform:scale(1.5)}20%{opacity:1;transform:scale(1)}76%{opacity:1}100%{opacity:0}}
+.flash{animation:flash .42s 2}
+@keyframes flash{0%,100%{box-shadow:none}50%{box-shadow:0 0 70px #ff174a,inset 0 0 60px #ff174a55}}
+.shake{animation:shake .34s}
+@keyframes shake{0%,100%{transform:translate(0)}25%{transform:translate(-4px,2px)}50%{transform:translate(4px,-2px)}75%{transform:translate(-3px,1px)}}
+.rainbow{animation:rainbow 1s linear infinite}
+@keyframes rainbow{0%{filter:hue-rotate(0)}100%{filter:hue-rotate(360deg)}}
+#dev{position:fixed;inset:auto 10px 10px 10px;z-index:200;background:#101015f7;border:1px solid #3a3a44;border-radius:15px;padding:12px;display:none;max-width:440px;margin:auto}
+#dev.open{display:block}
+#dev h3{margin:0 0 8px;font-size:13px}
+.devgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.devgrid button{padding:9px 4px;border:1px solid #3a3a44;border-radius:9px;background:#202028;color:white;font-weight:700;font-size:11px}
+.closeDev{margin-top:8px;width:100%;padding:8px;border:0;border-radius:8px}
+.atglow .machine{box-shadow:0 0 32px #ff244f44,inset 0 0 35px #3c0010}
+.upper .machine{box-shadow:0 0 35px #ffd16655,inset 0 0 45px #6a4d001f}
+
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top">
+    <div class="logo">BLACKOUT RUSH<small>COPA GAMES ORIGINAL SLOT</small></div>
+    <button class="gear" id="gear">⚙</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b id="credit">500</b><span>CREDIT</span></div>
+    <div class="stat"><b id="payout">0</b><span>PAYOUT</span></div>
+    <div class="stat"><b id="games">0</b><span>GAME</span></div>
+  </div>
+
+  <div class="machine" id="machine">
+    <div class="panel-title" id="modeTitle">NORMAL MODE</div>
+    <div class="lamp-row"><i class="lamp" id="lamp1"></i><i class="lamp" id="lamp2"></i><i class="lamp" id="lamp3"></i></div>
+
+    <div class="reel-window">
+      <div class="reel" id="reel0"></div>
+      <div class="reel" id="reel1"></div>
+      <div class="reel" id="reel2"></div>
+      <div class="center-glow"></div>
+    </div>
+
+    <div class="message" id="msg">MAX BET → LEVER</div>
+
+    <div class="controls">
+      <button class="stop" id="stop0" disabled>STOP</button>
+      <button class="stop" id="stop1" disabled>STOP</button>
+      <button class="stop" id="stop2" disabled>STOP</button>
+    </div>
+
+    <div class="bottom-controls">
+      <button class="bet" id="bet">MAX BET 3</button>
+      <button class="lever" id="lever">LEVER</button>
+    </div>
+
+    <div class="modebox">
+      <div class="modehead"><span id="submode">通常時</span><span id="counter">PT 0 / 100</span></div>
+      <div class="gauge"><i id="gaugebar"></i></div>
+      <div class="log" id="log">レア役・前兆・CZ・AT・上位ATを搭載</div>
+    </div>
+  </div>
+
+  <div class="footer">VIRTUAL MEDALS ONLY / © 2026 COPA GAMES</div>
+</div>
+
+<div id="fx"><div class="black"></div><div class="line"></div><div class="fxtext" id="fxtext"></div></div>
+
+<div id="dev">
+  <h3>演出テスト</h3>
+  <div class="devgrid">
+    <button data-force="cherry">弱チェリー</button>
+    <button data-force="strong">強レア役</button>
+    <button data-force="chance">チャンス目</button>
+    <button data-action="cz">CZ突入</button>
+    <button data-action="at">AT突入</button>
+    <button data-action="freeze">プチュン</button>
+    <button data-action="upper">上位AT</button>
+    <button data-action="credit">+500枚</button>
+    <button data-action="reset">初期化</button>
+  </div>
+  <button class="closeDev" id="closeDev">閉じる</button>
+</div>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const reels = [$('#reel0'),$('#reel1'),$('#reel2')];
+const stopBtns = [$('#stop0'),$('#stop1'),$('#stop2')];
+const symbols = ['7','BAR','🔔','🍒','⭐','REPLAY','☠️'];
+const symbolWeights = [
+  ['7',2],['BAR',4],['🔔',18],['🍒',11],['⭐',10],['REPLAY',20],['☠️',35]
+];
+let S = {
+  credit: Number(localStorage.br_credit || 500),
+  payout:0, games:Number(localStorage.br_games || 0),
+  mode:'normal', points:0, preGames:0, preHit:false,
+  czGames:0, czGauge:0, atGames:0, upperGames:0,
+  spinning:false, stopped:[true,true,true], targets:['☠️','☠️','☠️'],
+  force:null, betReady:false, totalStops:0
+};
+let spinTimers=[null,null,null], audioCtx=null;
+
+function save(){localStorage.br_credit=S.credit;localStorage.br_games=S.games}
+function rnd(n=1){return Math.random()*n}
+function pickWeighted(list){
+  let t=list.reduce((a,b)=>a+b[1],0), r=rnd(t);
+  for(const [v,w] of list){r-=w;if(r<=0)return v}
+  return list[list.length-1][0]
+}
+function tone(freq=440,d=.06,type='square',vol=.035,delay=0){
+  try{
+    audioCtx ||= new (window.AudioContext||window.webkitAudioContext)();
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.type=type;o.frequency.value=freq;g.gain.value=vol;
+    o.connect(g);g.connect(audioCtx.destination);
+    const t=audioCtx.currentTime+delay;o.start(t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.stop(t+d+.01);
+  }catch(e){}
+}
+function sfxStop(i){tone([140,170,200][i],.05,'square',.06)}
+function sfxLever(){tone(90,.08,'sawtooth',.04);tone(180,.06,'square',.02,.04)}
+function sfxHit(){[440,660,880].forEach((f,i)=>tone(f,.12,'square',.04,i*.07))}
+function sfxHot(){[250,330,500,760].forEach((f,i)=>tone(f,.08,'sawtooth',.045,i*.06))}
+function renderReel(el, center){
+  const idx=symbols.indexOf(center);
+  const prev=symbols[(idx-1+symbols.length)%symbols.length], next=symbols[(idx+1)%symbols.length];
+  el.innerHTML=[prev,center,next].map(cellHTML).join('');
+}
+function cellHTML(s){
+  let cls='cell';
+  if(s==='7')cls+=' seven'; if(s==='BAR')cls+=' bar'; if(s==='⭐')cls+=' star';
+  return `<div class="${cls}">${s}</div>`;
+}
+function randomSymbol(){return pickWeighted(symbolWeights)}
+function update(){
+  $('#credit').textContent=Math.max(0,S.credit);
+  $('#payout').textContent=S.payout;
+  $('#games').textContent=S.games;
+  let title='NORMAL MODE', sub='通常時', ct=`PT ${S.points} / 100`, gp=S.points;
+  document.body.classList.remove('atglow','upper');
+  if(S.mode==='premonition'){title='前兆 ZONE';sub='ざわめき前兆';ct=`残り ${S.preGames}G`;gp=Math.max(0,(6-S.preGames)*17);$('#msg').classList.add('hot')}
+  else if(S.mode==='cz'){title='BREAK CHANCE';sub='CZ 突破期待度';ct=`残り ${S.czGames}G / ${Math.min(100,S.czGauge)}%`;gp=S.czGauge;document.body.classList.add('atglow')}
+  else if(S.mode==='at'){title='BLACKOUT RUSH';sub='AT';ct=`残り ${S.atGames}G`;gp=Math.min(100,S.atGames);document.body.classList.add('atglow')}
+  else if(S.mode==='upper'){title='SUPER BLACKOUT';sub='上位AT';ct=`残り ${S.upperGames}G`;gp=100;document.body.classList.add('upper')}
+  else $('#msg').classList.remove('hot');
+  $('#modeTitle').textContent=title; $('#submode').textContent=sub; $('#counter').textContent=ct;
+  $('#gaugebar').style.width=Math.max(0,Math.min(100,gp))+'%';
+  save();
+}
+function setMsg(t,hot=false){$('#msg').textContent=t;$('#msg').classList.toggle('hot',hot)}
+function log(t){$('#log').textContent=t}
+function lamps(on=false){['#lamp1','#lamp2','#lamp3'].forEach(x=>$(x).classList.toggle('on',on))}
+function bet(){
+  if(S.spinning||S.betReady)return;
+  if(S.credit<3){setMsg('CREDIT不足');return}
+  S.credit-=3;S.betReady=true;S.payout=0;setMsg('LEVER ON');tone(500,.04,'square',.025);update();
+}
+function chooseOutcome(){
+  if(S.force){const f=S.force;S.force=null;return f}
+  const r=Math.random();
+  if(r<0.0018)return 'freeze';
+  if(r<0.012)return 'bonus';
+  if(r<0.035)return 'strong';
+  if(r<0.075)return 'chance';
+  if(r<0.16)return 'cherry';
+  if(r<0.32)return 'bell';
+  if(r<0.52)return 'replay';
+  return 'miss';
+}
+function outcomeTargets(o){
+  switch(o){
+    case'freeze':return ['7','7','7'];
+    case'bonus':return ['BAR','BAR','BAR'];
+    case'strong':return ['🍒','7','🍒'];
+    case'chance':return ['⭐','⭐','7'];
+    case'cherry':return ['🍒','☠️','☠️'];
+    case'bell':return ['🔔','🔔','🔔'];
+    case'replay':return ['REPLAY','REPLAY','REPLAY'];
+    default:return [randomSymbol(),randomSymbol(),randomSymbol()];
+  }
+}
+function lever(){
+  if(S.spinning)return;
+  if(!S.betReady){bet();if(!S.betReady)return}
+  sfxLever();S.betReady=false;S.spinning=true;S.games++;S.totalStops=0;
+  S.stopped=[false,false,false];
+  const out=chooseOutcome();S.currentOutcome=out;S.targets=outcomeTargets(out);
+  if(['strong','chance','bonus','freeze'].includes(out) && Math.random()<.58){
+    setTimeout(()=>{lamps(true);sfxHot();$('#machine').classList.add('flash');setTimeout(()=>$('#machine').classList.remove('flash'),900)},140);
+  } else lamps(false);
+  reels.forEach((el,i)=>{
+    el.classList.add('spinning');
+    spinTimers[i]=setInterval(()=>renderReel(el,randomSymbol()),55+i*7);
+    stopBtns[i].disabled=false;
+  });
+  $('#lever').disabled=true;$('#bet').disabled=true;setMsg('STOP BUTTON');
+  update();
+}
+function stop(i){
+  if(!S.spinning||S.stopped[i])return;
+  clearInterval(spinTimers[i]);S.stopped[i]=true;S.totalStops++;
+  reels[i].classList.remove('spinning');renderReel(reels[i],S.targets[i]);stopBtns[i].disabled=true;sfxStop(i);
+  if(S.stopped.every(Boolean))setTimeout(resolveSpin,220);
+}
+function pay(n){
+  S.payout+=n;S.credit+=n;
+  if(n>0){tone(700,.05,'square',.03);setTimeout(()=>tone(900,.06,'square',.025),60)}
+}
+function addPoints(n){S.points=Math.min(100,S.points+n);if(S.points>=100&&S.mode==='normal')startPremonition(true)}
+function startPremonition(forceHit=false){
+  S.mode='premonition';S.preGames=5;S.preHit=forceHit || Math.random()<.42;
+  setMsg('……ざわついている',true);log('何かが近い。違和感を見逃すな。');sfxHot();update();
+}
+function startCZ(){
+  S.mode='cz';S.czGames=8;S.czGauge=20+Math.floor(rnd(21));setMsg('BREAK CHANCE',true);log('8G以内にゲージを100%へ');sfxHit();update();
+}
+function startAT(upper=false){
+  if(upper){S.mode='upper';S.upperGames=Math.max(S.upperGames,50);setMsg('SUPER BLACKOUT',true);log('上位AT突入 / 高性能上乗せ状態');}
+  else{S.mode='at';S.atGames=Math.max(S.atGames,30);S.points=0;setMsg('BLACKOUT RUSH START',true);log('AT 30Gスタート / レア役で上乗せ');}
+  sfxHit();update();
+}
+function puchun(text='SUPER BLACKOUT',cb){
+  const fx=$('#fx'), ft=$('#fxtext');fx.className='show puchun';ft.textContent=text;
+  tone(120,.08,'sawtooth',.06);setTimeout(()=>tone(45,.16,'square',.07),140);
+  setTimeout(()=>{fx.className='';cb&&cb()},2900);
+}
+function resultNormal(o){
+  if(o==='bell'){pay(8);setMsg('ベル +8');log('ベル入賞')}
+  else if(o==='replay'){pay(3);setMsg('REPLAY');log('リプレイ')}
+  else if(o==='cherry'){pay(2);addPoints(10);setMsg('弱チェリー +10PT',true);log('前兆移行抽選'); if(S.mode==='normal'&&Math.random()<.16)startPremonition()}
+  else if(o==='chance'){addPoints(22);setMsg('チャンス目 +22PT',true);sfxHit();log('前兆期待度アップ'); if(S.mode==='normal'&&Math.random()<.48)startPremonition()}
+  else if(o==='strong'){addPoints(35);setMsg('強レア役 +35PT',true);sfxHit();log('前兆濃厚!?'); if(S.mode==='normal'&&Math.random()<.72)startPremonition()}
+  else if(o==='bonus'){pay(30);setMsg('BONUS +30',true);startPremonition(Math.random()<.72)}
+  else setMsg('ハズレ');
+  if(S.mode==='normal' && S.games>0 && S.games%45===0 && Math.random()<.65)startPremonition();
+}
+function resultPrem(o){
+  if(['strong','chance','bonus'].includes(o))S.preHit=true;
+  if(o==='cherry'&&Math.random()<.3)S.preHit=true;
+  if(o==='bell')pay(8); else if(o==='replay')pay(3);
+  S.preGames--;
+  setMsg(o==='miss'?'……':'前兆 継続',true);
+  if(S.preGames<=0){
+    if(S.preHit){setTimeout(startCZ,350)}
+    else{S.mode='normal';setMsg('前兆終了');log('通常時へ');update()}
+  }
+}
+function resultCZ(o){
+  let plus=6;
+  if(o==='cherry')plus=18;
+  if(o==='chance')plus=35;
+  if(o==='strong'||o==='bonus')plus=60;
+  if(o==='bell')plus=9;
+  S.czGauge=Math.min(100,S.czGauge+plus);S.czGames--;
+  setMsg(`CZ +${plus}%`,true);
+  if(S.czGauge>=100){setTimeout(()=>startAT(false),350);return}
+  if(S.czGames<=0){
+    const hit=Math.random()<S.czGauge/100;
+    if(hit)setTimeout(()=>startAT(false),350);
+    else{S.mode='normal';S.points=20;setMsg('BREAK CHANCE 失敗');log('通常時へ / 20PT保持');update()}
+  }
+}
+function resultAT(o,upper=false){
+  const mult=upper?2:1;
+  let p=3*mult, add=0;
+  if(o==='bell')p=12*mult;
+  if(o==='replay')p=5*mult;
+  if(o==='cherry'){p=6*mult;if(Math.random()<.34) add=(10+Math.floor(rnd(3))*10)*mult}
+  if(o==='chance'){p=10*mult;if(Math.random()<.62)add=(20+Math.floor(rnd(4))*10)*mult}
+  if(o==='strong'){p=15*mult;add=(30+Math.floor(rnd(5))*20)*mult}
+  if(o==='bonus'){p=50*mult;add=100*mult}
+  pay(p);
+  if(upper)S.upperGames--; else S.atGames--;
+  if(add){
+    if(upper)S.upperGames+=add; else S.atGames+=add;
+    setMsg(`上乗せ +${add}G`,true);sfxHit();$('#machine').classList.add('shake');setTimeout(()=>$('#machine').classList.remove('shake'),350);
+  } else setMsg(`GET +${p}`);
+  if(!upper && S.atGames<=0){
+    if(Math.random()<.18 || o==='strong'){
+      setMsg('RUSH END…',true);setTimeout(()=>puchun('限界を超えろ',()=>startAT(true)),700);
+    }else if(Math.random()<.25){
+      S.atGames=20;setMsg('復活 +20G',true);sfxHit();
+    }else{
+      S.mode='normal';S.points=30;setMsg('RUSH END');log('30PTを持って通常時へ');
+    }
+  }
+  if(upper && S.upperGames<=0){
+    if(Math.random()<.32){S.upperGames=30;setMsg('上位AT 継続 +30G',true);sfxHit()}
+    else{S.mode='normal';S.points=50;setMsg('SUPER BLACKOUT END');log('50PT保持で通常時へ')}
+  }
+}
+function resolveSpin(){
+  S.spinning=false;$('#lever').disabled=false;$('#bet').disabled=false;lamps(false);
+  const o=S.currentOutcome;
+  if(o==='freeze'){
+    setMsg('……',true);
+    puchun('LONG FREEZE',()=>{pay(100);startAT(true)});update();return;
+  }
+  if(S.mode==='normal')resultNormal(o);
+  else if(S.mode==='premonition')resultPrem(o);
+  else if(S.mode==='cz')resultCZ(o);
+  else if(S.mode==='at')resultAT(o,false);
+  else if(S.mode==='upper')resultAT(o,true);
+  update();
+}
+$('#bet').onclick=bet;$('#lever').onclick=lever;
+stopBtns.forEach((b,i)=>b.onclick=()=>stop(i));
+$('#gear').onclick=()=>$('#dev').classList.add('open');
+$('#closeDev').onclick=()=>$('#dev').classList.remove('open');
+document.querySelectorAll('[data-force]').forEach(b=>b.onclick=()=>{S.force=b.dataset.force;$('#dev').classList.remove('open');setMsg('次ゲーム 強制役セット',true)});
+document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{
+  const a=b.dataset.action;
+  if(a==='cz')startCZ();
+  if(a==='at')startAT(false);
+  if(a==='upper')startAT(true);
+  if(a==='freeze')puchun('LONG FREEZE',()=>startAT(true));
+  if(a==='credit'){S.credit+=500;update()}
+  if(a==='reset'){localStorage.removeItem('br_credit');localStorage.removeItem('br_games');location.reload()}
+  $('#dev').classList.remove('open');
+});
+reels.forEach((r,i)=>renderReel(r,['☠️','BAR','☠️'][i]));
+update();
+})();
+
+</script>
+</body>
+</html>
