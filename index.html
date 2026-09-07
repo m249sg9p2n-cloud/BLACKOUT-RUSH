@@ -1153,6 +1153,20 @@ body.play-mode #newRunBtn.frameHiddenBtn{display:none!important;}
 body.play-mode #playMessage.playMessagePill{position:absolute!important;left:14%!important;bottom:9.6%!important;width:72%!important;height:auto!important;min-height:0!important;margin:0!important;padding:4px 7px!important;border-radius:9px!important;background:rgba(5,13,34,.78)!important;border:1px solid #75dfff1c!important;z-index:7!important;font-size:6.5px!important;line-height:1.1!important;color:#cfe1ff!important;text-align:center!important;}
 body.play-mode #candidateWrap.hiddenPhase,body.play-mode #playSupportWrap.hiddenPhase,body.play-mode #answerRow.hiddenPhase{display:none!important;}
 </style>
+
+
+<style id="tapHiddenDevNoArtFinal">
+/* Generated HOME/PLAY art intentionally disabled. Keep only native UI. */
+body.home-mode .frameArt,body.play-mode .frameArt{display:none!important;background-image:none!important;}
+body.home-mode .appFrameView,body.play-mode .appFrameView{background:
+  radial-gradient(circle at 50% 5%,#21376f 0,transparent 30%),
+  radial-gradient(circle at 15% 65%,#102f56 0,transparent 34%),
+  radial-gradient(circle at 88% 72%,#3d164f 0,transparent 34%),
+  linear-gradient(180deg,#091126 0%,#060b19 52%,#03060e 100%)!important;
+}
+#devBtn,#resetBtn,#homeDevBtn,#homeFooterDev{display:none!important;}
+body.home-mode .homeFooterNav{grid-template-columns:repeat(4,1fr)!important;}
+</style>
 </head>
 <body class="home-mode">
 <div id="app">
@@ -1272,7 +1286,7 @@ body.play-mode #candidateWrap.hiddenPhase,body.play-mode #playSupportWrap.hidden
       <div class="playDifficultyPill note" id="difficultyInfo"></div>
 
       <div class="candidateWrap playCandidateShell" id="candidateWrap">
-        <div class="candidateTitle"><div class="k">候補BOX</div><div class="mutedLine">空いたマスへドラッグ</div></div>
+        <div class="candidateTitle"><div class="k">候補BOX</div><div class="mutedLine">ドラッグ / タップで左上から入力</div></div>
         <div id="candidateBox"></div>
       </div>
 
@@ -1845,6 +1859,16 @@ function renderRun(){
     cb.style.gridTemplateColumns=`repeat(${Math.min(6,Math.max(3,run.candidates.length))},1fr)`;
     cb.innerHTML = run.candidates.map((e,idx)=>`<div class="candidate" data-cand="${idx}">${e}</div>`).join('');
     VA('[data-cand]').forEach(el=> el.addEventListener('pointerdown', ev=>startDrag(ev, Number(el.dataset.cand))));
+    // A placed cell can be tapped to remove it before ANSWER.
+    VA('[data-cell]').forEach(cell=> cell.addEventListener('click', ()=>{
+      if(!run || run.phase!=='answer') return;
+      const idx=Number(cell.dataset.cell);
+      if(run.hiddenIndices.includes(idx) && !run.fixed.has(idx) && run.placements[idx]){
+        delete run.placements[idx];
+        sfx('pick');
+        renderRun();
+      }
+    }));
   } else {
     V('#candidateBox').innerHTML = '';
   }
@@ -1853,41 +1877,94 @@ function renderRun(){
   V('#recallBtn').disabled = !(run && run.phase==='answer' && run.recallLeft>0);
   const playItems = getSupportItems();
   V('#supportBadgesPlay').innerHTML = playItems.map(item=> item ? supportBadge(item) : `<div class="supportChipCard"><div class="supportChipEmoji">＋</div><div class="supportChipName">EMPTY SLOT</div><div class="supportChipMeta">NONE</div></div>`).join('');
-}function startDrag(ev, idx){
+}function nextTapTarget(){
+  if(!run || run.phase!=='answer') return null;
+  const order=[...(run.hiddenIndices||[])].sort((a,b)=>a-b);
+  for(const idx of order){
+    if(run.fixed.has(idx)) continue;
+    if(!run.placements[idx]) return idx;
+  }
+  return null;
+}
+function placeCandidateEmoji(idx, emoji){
+  if(!run || run.phase!=='answer' || !emoji) return false;
+  if(!run.hiddenIndices.includes(idx) || run.fixed.has(idx)) return false;
+  run.placements[idx]=emoji;
+  sfx('place');
+  renderRun();
+  return true;
+}
+function quickPlaceCandidate(sourceIdx){
   if(!run || run.phase!=='answer') return;
-  sfx('pick');
-  const emoji = run.candidates[idx];
-  dragState = { active:true, emoji, source:idx };
-  const fl = V('#floating');
-  fl.textContent = emoji;
-  fl.style.display='flex';
-  moveFloating(ev.clientX, ev.clientY);
-  ev.target.classList.add('dragging');
+  const idx=nextTapTarget();
+  if(idx===null){ showToast('空いているマスがありません'); return; }
+  placeCandidateEmoji(idx, run.candidates[sourceIdx]);
+}
+function clearCandidateDragVisuals(){
+  VA('.candidate').forEach(c=>c.classList.remove('dragging'));
+  VA('.cell').forEach(c=>c.classList.remove('dropTarget'));
+  const fl=V('#floating'); if(fl) fl.style.display='none';
+}
+function startDrag(ev, idx){
+  if(!run || run.phase!=='answer') return;
+  if(ev && ev.preventDefault) ev.preventDefault();
+  const emoji=run.candidates[idx];
+  dragState={
+    active:true, emoji, source:idx,
+    startX:ev.clientX, startY:ev.clientY,
+    dragging:false, sourceEl:ev.currentTarget||ev.target
+  };
   window.addEventListener('pointermove', dragMove);
   window.addEventListener('pointerup', dragEnd, {once:true});
+  window.addEventListener('pointercancel', dragCancel, {once:true});
 }
-function moveFloating(x,y){ const fl=V('#floating'); fl.style.transform=`translate(${x-36}px,${y-36}px)`; }
+function beginVisualDrag(){
+  if(!dragState.active || dragState.dragging) return;
+  dragState.dragging=true;
+  const fl=V('#floating');
+  if(fl){ fl.textContent=dragState.emoji; fl.style.display='flex'; moveFloating(dragState.startX,dragState.startY); }
+  if(dragState.sourceEl) dragState.sourceEl.classList.add('dragging');
+  sfx('pick');
+}
+function moveFloating(x,y){ const fl=V('#floating'); if(fl) fl.style.transform=`translate(${x-36}px,${y-36}px)`; }
 function dragMove(ev){
-  moveFloating(ev.clientX, ev.clientY);
-  const el=document.elementFromPoint(ev.clientX, ev.clientY);
+  if(!dragState.active) return;
+  const dx=ev.clientX-dragState.startX, dy=ev.clientY-dragState.startY;
+  if(!dragState.dragging && Math.hypot(dx,dy)>10) beginVisualDrag();
+  if(!dragState.dragging) return;
+  moveFloating(ev.clientX,ev.clientY);
+  const el=document.elementFromPoint(ev.clientX,ev.clientY);
   VA('.cell').forEach(c=>c.classList.remove('dropTarget'));
   if(el && el.closest('.cell')){
-    const cell=el.closest('.cell'); const idx=Number(cell.dataset.cell);
+    const cell=el.closest('.cell');
+    const idx=Number(cell.dataset.cell);
     if(run.hiddenIndices.includes(idx) && !run.fixed.has(idx)) cell.classList.add('dropTarget');
   }
 }
+function finishCandidateGesture(){
+  window.removeEventListener('pointermove',dragMove);
+  clearCandidateDragVisuals();
+  dragState={active:false,emoji:null,source:null};
+}
+function dragCancel(){ finishCandidateGesture(); }
 function dragEnd(ev){
-  const el=document.elementFromPoint(ev.clientX, ev.clientY);
-  VA('.candidate').forEach(c=>c.classList.remove('dragging')); VA('.cell').forEach(c=>c.classList.remove('dropTarget'));
-  V('#floating').style.display='none';
-  if(el && el.closest('.cell')){ const idx=Number(el.closest('.cell').dataset.cell); dropOnCell(idx); }
-  dragState.active=false; window.removeEventListener('pointermove', dragMove);
+  if(!dragState.active){ finishCandidateGesture(); return; }
+  const gesture={...dragState};
+  if(gesture.dragging){
+    const el=document.elementFromPoint(ev.clientX,ev.clientY);
+    if(el && el.closest('.cell')){
+      const idx=Number(el.closest('.cell').dataset.cell);
+      placeCandidateEmoji(idx,gesture.emoji);
+    }
+  }else{
+    // Short press = tap input. Fill the first available hidden cell from top-left.
+    quickPlaceCandidate(gesture.source);
+  }
+  finishCandidateGesture();
 }
 function dropOnCell(idx){
-  if(!run || !dragState.emoji || !run.hiddenIndices.includes(idx) || run.fixed.has(idx)) return;
-  run.placements[idx]=dragState.emoji;
-  sfx('place');
-  renderRun();
+  if(!dragState || !dragState.emoji) return;
+  placeCandidateEmoji(idx,dragState.emoji);
 }
 function calcStageReward(stage){
   let reward = stageReward(stage);
@@ -2216,12 +2293,39 @@ V('#resetBtn').onclick=()=>{
 V('#gameOverModal').addEventListener('click', e=>{ if(e.target.id==='gameOverModal') V('#gameOverModal').classList.remove('show'); });
 V('#stageClearModal').addEventListener('click', e=>{ if(e.target.id==='stageClearModal') V('#stageClearModal').classList.remove('show'); });
 
+
+// Hidden developer command: HOMEのCOIN表示を約2秒長押し。
+(function setupHiddenDeveloperCommand(){
+  const area=document.querySelector('.homeTopCoin');
+  if(!area) return;
+  let timer=null;
+  let opened=false;
+  const cancel=()=>{ if(timer){ clearTimeout(timer); timer=null; } };
+  area.style.userSelect='none';
+  area.style.webkitUserSelect='none';
+  area.addEventListener('pointerdown',()=>{
+    opened=false;
+    cancel();
+    timer=setTimeout(()=>{
+      opened=true;
+      timer=null;
+      const modal=V('#devModal');
+      if(modal){ modal.classList.add('show'); sfx('get'); }
+    },2000);
+  });
+  area.addEventListener('pointerup',cancel);
+  area.addEventListener('pointercancel',cancel);
+  area.addEventListener('pointerleave',cancel);
+})();
+
 attachSlotPuchunToLcd();
 updateTop();
 renderSupportManager();
 renderCollection();
 renderRun();
 resetSlotGachaUI();
+
+
 </script>
 </body>
 </html>
