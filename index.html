@@ -1619,6 +1619,7 @@ function noiseBurst(dur=0.12, vol=0.03, hp=700){
 }
 function sfx(name){
   switch(name){
+    case 'tap': tone(980,0.028,'sine',0.012); tone(1480,0.022,'triangle',0.008,0.012); break;
     case 'start': tone(440,0.06,'triangle',0.03); tone(660,0.08,'triangle',0.028,0.05); tone(880,0.11,'triangle',0.025,0.12); break;
     case 'hide': tone(700,0.04,'square',0.02); tone(520,0.06,'square',0.018,0.05); break;
     case 'pick': tone(820,0.03,'triangle',0.015); break;
@@ -1633,6 +1634,15 @@ function sfx(name){
   }
 }
 document.addEventListener('pointerdown', ()=>ensureAudio(), {once:true});
+
+/* ==== Lightweight UI tap SE (no additional audio files) ==== */
+document.addEventListener('pointerdown', (ev)=>{
+  const btn = ev.target && ev.target.closest ? ev.target.closest('button') : null;
+  if(!btn || btn.disabled) return;
+  // Gacha PUSH already has its own dedicated SE; avoid double playback.
+  if(btn.id==='slotPushHit' || btn.closest('#slotPushZone')) return;
+  sfx('tap');
+}, {passive:true});
 
 /* ==== COPA GAMES BGM SYSTEM ==== */
 const BGM_CONFIG = {
@@ -2328,6 +2338,7 @@ function showSlotPush(index){
   return new Promise(resolve=>{slotPushResolver=resolve;});
 }
 async function playSlotPuchun(){
+  // PUSH成功と同じイベント内で即座にプチュンを開始する。
   suspendBgmForEffect();
   const p=V('#slotPuchunVideo');
   const lcd=V('#slotLcd');
@@ -2336,13 +2347,36 @@ async function playSlotPuchun(){
   if(lcd) lcd.classList.remove('dim');
   // 魔法陣では白い粒を残すが、プチュン中だけ完全に消す。
   if(sparks){ sparks.innerHTML=''; sparks.classList.add('puchunHide'); }
+  if(!p){ resumeBgmAfterEffect(); return; }
+  try{ p.pause(); p.currentTime=0; }catch(e){}
   p.classList.add('show');
-  await safePlay(p);
+  // play() のPromise解決を待たず、押下処理の同じ瞬間に再生要求を出す。
+  try{ const started=p.play(); if(started&&started.catch) started.catch(()=>{}); }catch(e){}
   await waitEnded(p,2100);
   p.classList.remove('show');
   if(sparks) sparks.classList.remove('puchunHide');
   resumeBgmAfterEffect();
 }
+
+let slotPuchunPrimed=false;
+function primeSlotPuchun(){
+  if(slotPuchunPrimed) return;
+  slotPuchunPrimed=true;
+  const p=V('#slotPuchunVideo');
+  if(!p) return;
+  try{
+    p.preload='auto';
+    p.load();
+    const wasMuted=p.muted;
+    p.muted=true;
+    const r=p.play();
+    const finish=()=>{ try{p.pause();p.currentTime=0;p.muted=wasMuted;}catch(e){} };
+    if(r&&r.then) r.then(()=>requestAnimationFrame(finish)).catch(()=>{try{p.muted=wasMuted;}catch(e){}});
+    else requestAnimationFrame(finish);
+  }catch(e){}
+}
+// iPhoneで初回プチュンだけ遅れないよう、最初のユーザー操作で無音プリロード。
+document.addEventListener('pointerdown', primeSlotPuchun, {once:true,capture:true});
 function rarityForStop(stageIndex){
   if(stageIndex===0) return Math.random() < (70/90) ? 'N':'R';
   if(stageIndex===1) return 'SR';
@@ -2412,7 +2446,7 @@ async function handleSlotPush(){
   sfx('push'); V('#slotPushZone').className='slotPushZone';
 
   if(devGachaMode==='full'){
-    if(stage<3){ setSlotMessage('DEV｜CHANCE UP!'); await sleep(160); await playSlotPuchun(); setSlotMessage(''); resolve(true); await showSlotStage(stage+1); return; }
+    if(stage<3){ setSlotMessage('DEV｜CHANCE UP!'); await playSlotPuchun(); setSlotMessage(''); resolve(true); await showSlotStage(stage+1); return; }
     setSlotMessage('DEV｜FINAL RESULT'); await sleep(360); renderDevSlotResult(chooseItem('G')); resolve(false); return;
   }
   if(devGachaMode==='miss'){
@@ -2425,7 +2459,6 @@ async function handleSlotPush(){
     const target=singleGachaState.targetStage;
     if(stage<target){
       setSlotMessage(slotPushState && slotPushState.guaranteed ? '激アツ成功!' : 'CHANCE UP!');
-      await sleep(160);
       await playSlotPuchun();
       setSlotMessage('');
       resolve(true);
@@ -2452,7 +2485,6 @@ async function handleSlotPush(){
     const target=tenGachaState.targetStage;
     if(stage<target){
       setSlotMessage(slotPushState && slotPushState.guaranteed ? '激アツ成功!' : 'CHANCE UP!');
-      await sleep(160);
       await playSlotPuchun();
       setSlotMessage('');
       resolve(true);
@@ -2478,7 +2510,6 @@ async function handleSlotPush(){
   const success = slotPushState && slotPushState.guaranteed ? true : Math.random()<SLOT_STAGES[stage].develop;
   if(success){
     setSlotMessage(slotPushState && slotPushState.guaranteed ? '激アツ成功!' : 'CHANCE UP!');
-    await sleep(160);
     await playSlotPuchun();
     setSlotMessage('');
     resolve(true);
